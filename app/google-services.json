@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "399459372196",
+    "project_id": "farmer-ccadf",
+    "storage_bucket": "farmer-ccadf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:399459372196:android:4625e8bc4ba7e9fa306a31",
+        "android_client_info": {
+          "package_name": "com.example.farmer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnpiUMubrMUWFaC7s9bLiRDJwUbMhCcJk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
