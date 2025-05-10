@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.farmer.data.AuthViewModel
 import com.example.farmer.data.TipsViewModel
 import com.example.farmer.data.WeatherViewModel
+import com.example.farmer.models.Crops
 import com.example.farmer.models.Tip
 import com.example.farmer.ui.theme.screens.homescreen.HomeScreen
 
@@ -19,11 +20,14 @@ import com.example.farmer.ui.theme.screens.login.LogInScreen
 import com.example.farmer.ui.theme.screens.register.RegisterScreen
 import com.example.farmer.ui.theme.screens.settings.ProfileScreen
 import com.example.farmer.ui.theme.screens.SplashScreen
+import com.example.farmer.ui.theme.screens.crops.CropFeed
+import com.example.farmer.ui.theme.screens.crops.CropsScreen
 import com.example.farmer.ui.theme.screens.settings.EditProfileScreen
 import com.example.farmer.ui.theme.screens.start.StartUpScreen
 import com.example.farmer.ui.theme.screens.tips.FeedScreen
 import com.example.farmer.ui.theme.screens.tips.PostTipScreen
 import com.example.farmer.ui.theme.screens.weather.WeatherScreen
+import com.example.farmer.ui.viewmodel.CropsViewModel
 
 
 @Composable
@@ -46,6 +50,8 @@ fun AppNavHost(startDestination:String= ROUTE_START){
 
         composable(ROUTE_TIPS) { FeedScreen(viewModel = TipsViewModel,navController =navController, onDelete = {}) }
         composable(ROUTE_EDIT){ EditProfileScreen(navController, viewModel = AuthViewModel())}
+        composable(ROUTE_CROPFEED) { CropFeed(navController = navController)  }
+        composable(ROUTE_CROPFORM) { CropsScreen(navController) }
 
         }
     }

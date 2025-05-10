@@ -76,5 +76,11 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
     implementation ("com.github.bumptech.glide:glide:4.13.2")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation( "androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.4.3")
+
+
+
 
 }
