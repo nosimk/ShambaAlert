@@ -1,6 +1,7 @@
 package com.example.farmer.ui.theme.screens.password
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,18 +20,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.farmer.data.AuthViewModel
+import com.example.farmer.navigation.ROUTE_CHANGEDPASSWORD
+import com.example.farmer.navigation.ROUTE_SETTINGS
 import com.example.farmer.ui.theme.SoftGreen
 
 @Composable
-fun PasswordScreen(onPasswordChange: (String, String, String) -> Unit){
+fun PasswordScreen(navController: NavController){
     var currentpass by remember { mutableStateOf("") }
     var newpass by remember { mutableStateOf("") }
     var confirmpass by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
+    val context = LocalContext.current
+    val viewModel : AuthViewModel = viewModel()
 
     Column (
         modifier = Modifier.background(SoftGreen).fillMaxSize().fillMaxWidth(),
@@ -62,14 +71,30 @@ fun PasswordScreen(onPasswordChange: (String, String, String) -> Unit){
         Spacer(Modifier.height(12.dp))
         Button(onClick = {
 
-            Log.d("ChangePassword", "Button clicked with currentPassword: $currentpass, newPassword: $newpass, confirmPassword: $confirmpass")
-
-            if (newpass == confirmpass) {
-
-                onPasswordChange(currentpass, newpass   , confirmpass)
-            } else {
-                message = "Passwords do not match"
+            when {
+                currentpass.isBlank() || newpass.isBlank() || confirmpass.isBlank() -> {
+                    Toast.makeText(context, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                }
+                newpass != confirmpass-> {
+                    Toast.makeText(context, "New passwords do not match", Toast.LENGTH_SHORT).show()
+                }
+                newpass.length < 6 -> {
+                    Toast.makeText(context, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
+                }
+                else -> {
+                    viewModel.changePassword(
+                        currentpass,
+                        newpass,
+                        onSuccess = {
+                            Toast.makeText(context, "Password changed successfully", Toast.LENGTH_SHORT).show()
+                        },
+                        onError = { errorMsg ->
+                            Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                        }
+                    )
+                }
             }
+            navController.navigate(ROUTE_SETTINGS)
         },
             modifier = Modifier.align(Alignment.CenterHorizontally)) {
             Text(text = "Update Password")

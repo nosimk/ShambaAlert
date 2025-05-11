@@ -1,11 +1,16 @@
 package com.example.farmer.models
 
+import java.util.UUID
+
 data class Crops(
-    var cropName :String = "",
-    var duration :String = "",
-    var harvest :String ="",
+    val  cropId :String = "",
+
+    val cropName :String = "",
+    val duration :String = "",
+    val harvest :String ="",
 
 
-    val cropId : String = ""
+
+
 )
 

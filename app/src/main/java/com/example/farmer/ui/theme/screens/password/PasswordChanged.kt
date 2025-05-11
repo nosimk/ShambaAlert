@@ -43,6 +43,7 @@ import com.example.farmer.ui.theme.SoftGreen
 import com.example.farmer.R
 import com.example.farmer.data.AuthViewModel
 import com.example.farmer.navigation.ROUTE_POST
+import com.example.farmer.navigation.ROUTE_SETTINGS
 import com.example.farmer.navigation.ROUTE_TIPS
 import com.example.farmer.navigation.ROUTE_WEATHER
 import com.example.farmer.ui.theme.ForestGreen
@@ -163,30 +164,7 @@ fun ChangedPasswordScreen(navController: NavController,viewModel: AuthViewModel)
                 fontWeight = FontWeight.Bold
             )
             Button(onClick = {
-                if (newpass == confirmpass) {
-                    // Triggering the callback with the current, new, and confirm passwords
-                    onPasswordChange(currentpass, newpass, confirmpass)
-                } else {
-                    // Pass the changePassword function as the onPasswordChange callback
-                    @Composable
-                     fun ChangedPasswordScreen(onPasswordChange = { currentpass, newpass, confirmPassword ->
-                        // Log to check if the onPasswordChange callback is triggered
-                        Log.d("ChangePassword", "Received currentPassword: $currentPassword, newPassword: $newPassword")
-
-                        // Now call changePassword to perform the password change
-                        changePassword(currentPassword, newPassword,
-                            onSuccess = {
-                                // Log success
-                                Log.d("ChangePassword", "Password changed successfully")
-                                isSuccess = true
-                            },
-                            onFailure = { error ->
-                                // Log failure error
-                                Log.e("ChangePassword", "Error: $error")
-                                Toast.makeText(context, error, Toast.LENGTH_LONG).show()
-                            })
-                    })
-                }
+                navController.navigate(ROUTE_SETTINGS)
 
         }) {
                 Text(text = "Go back to Profile")

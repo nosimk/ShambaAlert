@@ -1,5 +1,6 @@
 package com.example.farmer.data
 
+import android.app.VoiceInteractor
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -19,23 +20,35 @@ import com.example.farmer.navigation.ROUTE_TIPS
 import com.example.farmer.network.ImgurApiService
 
 import com.example.farmer.network.RetrofitClient
+import com.google.firebase.Firebase
 import com.google.firebase.auth.EmailAuthProvider
 
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.database
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import java.io.File
+import java.io.IOException
+import java.util.UUID
+
 
 class AuthViewModel:ViewModel() {
     private val mAuth : FirebaseAuth = FirebaseAuth.getInstance()
@@ -52,6 +65,15 @@ class AuthViewModel:ViewModel() {
 
     private val _userProfilePicture = MutableLiveData<UserProfile>()
     val userProfilePicture: LiveData<UserProfile> get() = _userProfilePicture
+    private val database = FirebaseDatabase.getInstance()
+    private val storage = FirebaseStorage.getInstance()
+    private val userId = "yourUserId" // Replace with actual user ID
+    private lateinit var imageUri: Uri // Stores selected image URI
+    private val storageRef = storage.reference.child("profile_images/${UUID.randomUUID()}.jpg")
+
+
+
+
 
 
 
@@ -118,107 +140,34 @@ class AuthViewModel:ViewModel() {
     fun logout() {
         FirebaseAuth.getInstance().signOut()
     }
-    fun fetchUserData() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val userRef = FirebaseFirestore.getInstance().collection("users").document(uid)
-
-        userRef.get()
-            .addOnSuccessListener { document ->
-                if (document != null) {
-                    val fullname = document.getString("fullname")
-                    val email = document.getString("email")
-                    val phoneNumber = document.getString("phoneNumber")
-                    val profilePictureUrl = document.getString("profilePictureUrl")
-
-                    _userName.value = fullname ?:""
-                    _userEmail.value = email  ?:""
-                    _userPhone.value = phoneNumber  ?:""
-                    _userProfilePicture.value = UserProfile(profilePictureUrl  ?:"")
-                }
-            }
-            .addOnFailureListener { exception ->
-                Log.e("EditProfile", "Error getting user data: ${exception.message}")
-            }
-    }
-    fun updateProfile() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val userRef = FirebaseFirestore.getInstance().collection("users").document(uid)
-
-        val updatedData = mapOf(
-            "fullName" to _userName.value,
-            "email" to _userEmail.value,
-            "phoneNumber" to _userPhone.value,
-            "profilePictureUrl" to _userProfilePicture.value
-        )
-
-        userRef.update(updatedData)
-            .addOnSuccessListener {
-                Log.d("EditProfile", "User profile updated successfully.")
-            }
-            .addOnFailureListener { exception ->
-                Log.e("EditProfile", "Error updating profile: ${exception.message}")
-            }
-    }
 
 
-    fun uploadProfilePictureToImgur(imageUri: Uri, context: Context) {
-        val file = File(imageUri.path!!)
-        val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
-        val imagePart = MultipartBody.Part.createFormData("image", file.name, requestFile)
 
-        RetrofitClient.instance.uploadImage(RetrofitClient.CLIENT_ID, imagePart)
-            .enqueue(object : Callback<ImgurResponse> {
-            override fun onResponse(call: Call<ImgurResponse>, response: Response<ImgurResponse>) {
-                if (response.isSuccessful && response.body() != null) {
-                    val imageUrl = response.body()?.data?.link ?: ""
-                    saveProfileImageUrlToFirestore(imageUrl)
-                    _userProfilePicture.value = UserProfile(profilePictureUrl = imageUrl)
-                    Log.d("ProfileViewModel", "Image uploaded: $imageUrl")
-                } else {
-                    Log.e("ProfileViewModel", "Error: ${response.errorBody()?.string()}")
-                }
-            }
 
-            override fun onFailure(call: Call<ImgurResponse>, t: Throwable) {
-                Log.e("ProfileViewModel", "Upload failed: ${t.message}")
-            }
-        })
-
-    }
-
-    private fun saveProfileImageUrlToFirestore(url: String) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val db = FirebaseFirestore.getInstance()
-        db.collection("users").document(userId).update("profilePictureUrl", url)
-            .addOnSuccessListener {
-                Log.d("ProfileViewModel", "Profile picture URL updated")
-            }
-            .addOnFailureListener { e ->
-                Log.e("ProfileViewModel", "Error updating profile picture URL", e)
-            }
-    }
-    fun changePassword(request: ChangePasswordRequest, onSuccess: () -> Unit, onFailure: (String) -> Unit) {
+    fun changePassword(
+        currentpass: String,
+        newpass: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
         val user = FirebaseAuth.getInstance().currentUser
-        if (user != null) {
-            val credential = EmailAuthProvider.getCredential(user.email!!, request.currentPassword)
-            user.reauthenticate(credential).addOnCompleteListener { reauthTask ->
-                if (reauthTask.isSuccessful) {
-                    user.updatePassword(request.newPassword).addOnCompleteListener { updateTask ->
-                        if (updateTask.isSuccessful) {
-                            onSuccess()
-                        } else {
-                            onFailure(updateTask.exception?.message ?: "Password change failed")
-                        }
-                    }
-                } else {
-                    onFailure(reauthTask.exception?.message ?: "Reauthentication failed")
+        val email = user?.email
+
+        if (user != null && email != null) {
+            val credential = EmailAuthProvider.getCredential(email, currentpass)
+            user.reauthenticate(credential)
+                .addOnSuccessListener {
+                    user.updatePassword(newpass)
+                        .addOnSuccessListener { onSuccess() }
+                        .addOnFailureListener { e -> onError("Failed to change password: ${e.message}") }
                 }
-            }
+                .addOnFailureListener { e -> onError("Re-authentication failed: ${e.message}") }
         } else {
-            onFailure("User not logged in")
+            onError("User not logged in.")
         }
-    }
-}
+    }}
+
+
 
 
 

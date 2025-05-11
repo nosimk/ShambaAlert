@@ -4,10 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.navigation.compose.rememberNavController
 import com.example.farmer.api.WeatherModel
 import com.example.farmer.data.WeatherViewModel
 import com.example.farmer.navigation.AppNavHost
 import com.example.farmer.ui.theme.FarmerTheme
+import com.example.farmer.ui.theme.screens.crops.CropFeedScreen
+import com.example.farmer.ui.theme.screens.crops.CropsScreen
 import com.example.farmer.ui.theme.screens.homescreen.HomeScreen
 import com.example.farmer.ui.theme.screens.weather.WeatherScreen
 
@@ -17,6 +20,7 @@ import com.example.farmer.ui.theme.screens.weather.WeatherScreen
         enableEdgeToEdge()
         setContent {
             FarmerTheme {
+
 //
                 AppNavHost()
             }

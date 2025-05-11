@@ -10,7 +10,8 @@ package com.example.farmer.models
 
 data class UserProfile(
     val fullname: String = "",
-    val email: String ="",
     val phone: String = "",
+    val email: String ="",
+    val userProfileId: String = "",
     val profilePictureUrl : String =""
 )

@@ -38,7 +38,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.rememberAsyncImagePainter
 import com.example.farmer.R
+import com.example.farmer.models.UserModel
+import com.example.farmer.models.UserProfile
 import com.example.farmer.navigation.ROUTE_EDIT
 import com.example.farmer.navigation.ROUTE_POST
 import com.example.farmer.navigation.ROUTE_START
@@ -51,7 +54,7 @@ import com.example.farmer.ui.theme.screens.tips.TipsFeed
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(navController:NavController) {  Scaffold ( topBar = {
+fun SettingsScreen(navController:NavController,userModel: UserModel,userProfile: UserProfile) {  Scaffold ( topBar = {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = MintGreen,
@@ -147,11 +150,11 @@ fun SettingsScreen(navController:NavController) {  Scaffold ( topBar = {
                     ){
                         Spacer(Modifier.height(30.dp))
                         Text(
-                            text = "Name",
+                            text = userModel.fullname,
                             fontSize = 30.sp,
                             fontWeight = FontWeight.Bold)
                         Text(
-                            text = "Email Address",
+                            text = userModel.email,
                             fontSize = 15.sp
                         )
 
@@ -161,10 +164,10 @@ fun SettingsScreen(navController:NavController) {  Scaffold ( topBar = {
                         }
                     }
                 Row (){
-                    Icon(
-                        painter = painterResource(R.drawable.editp),
+                    Image(
+                        painter = rememberAsyncImagePainter(userProfile.profilePictureUrl),
                         contentDescription = "",
-                        modifier = Modifier.size(70.dp)
+                        modifier = Modifier.size(100.dp)
                     )
                     TextButton (onClick = {
                         navController.navigate(ROUTE_EDIT)
@@ -213,8 +216,8 @@ fun SettingsScreen(navController:NavController) {  Scaffold ( topBar = {
 
                     
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun SettingsScreenPreview() {
-    SettingsScreen(rememberNavController())
-}
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun SettingsScreenPreview() {
+//    SettingsScreen(rememberNavController())
+//}

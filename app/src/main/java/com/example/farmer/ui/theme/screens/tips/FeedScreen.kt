@@ -59,6 +59,7 @@ import com.example.farmer.ui.theme.ForestGreen
 import com.example.farmer.R
 import com.example.farmer.data.TipsViewModel
 import com.example.farmer.models.Tip
+import com.example.farmer.navigation.ROUTE_CROPFORM
 import com.example.farmer.navigation.ROUTE_POST
 import com.example.farmer.navigation.ROUTE_SETTINGS
 import com.example.farmer.navigation.ROUTE_WEATHER
@@ -93,7 +94,8 @@ fun FeedScreen(viewModel: TipsViewModel,navController: NavController,onDelete: (
             )
             NavigationBarItem(
                 selected = selectedItem.value == 1,
-                onClick = {selectedItem.value = 1},
+                onClick = {selectedItem.value = 1
+                          navController.navigate(ROUTE_CROPFORM)},
                 icon = { Image(painter = painterResource(R.drawable.crops),
                     contentDescription = "",
                     modifier = Modifier.size(80.dp)) },

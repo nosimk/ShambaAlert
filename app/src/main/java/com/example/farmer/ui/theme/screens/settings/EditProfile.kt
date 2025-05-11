@@ -1,10 +1,12 @@
 package com.example.farmer.ui.theme.screens.settings
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +33,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -40,8 +43,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -53,38 +58,111 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.farmer.R
 import com.example.farmer.data.AuthViewModel
+import com.example.farmer.models.UserModel
+import com.example.farmer.models.UserProfile
 import com.example.farmer.navigation.ROUTE_POST
 import com.example.farmer.navigation.ROUTE_TIPS
 import com.example.farmer.navigation.ROUTE_WEATHER
 import com.example.farmer.ui.theme.ForestGreen
 import com.example.farmer.ui.theme.MintGreen
 import com.example.farmer.ui.theme.SoftGreen
+import com.example.farmer.ui.viewmodel.CropsViewModel
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.database
+// Jetpack Compose
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.runtime.*
+
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModel
+
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.clip
+
+// Accompanist (or Coil) for image loading
+import coil.compose.AsyncImage
+
+
+
+
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.tasks.await
+
+
+import android.content.Context
+
+import android.util.Base64
+import android.widget.Toast
+
+
+import androidx.activity.compose.rememberLauncherForActivityResult
+import com.example.farmer.data.ProfileViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+
+
+import okhttp3.*
+import org.json.JSONObject
+import java.io.IOException
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(navController: NavController,
-                      viewModel : AuthViewModel){
-    val imageUri = rememberSaveable() { mutableStateOf<Uri?>(null) }
-    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? -> uri?.let { imageUri.value=it }  }
+
+){  val viewModel :ProfileViewModel = viewModel()
+    val context = LocalContext.current
+    val user by viewModel.userData.collectAsState()
+    val profile by viewModel.profileImage.collectAsState()
+
     var fullname by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
-    val userName by viewModel.userName.observeAsState("")
-    val userEmail by viewModel.userEmail.observeAsState("")
-    val userPhone by viewModel.userPhone.observeAsState("")
-    val profilePictureUrl by viewModel.userProfilePicture.observeAsState("")
-    LaunchedEffect (Unit){
+    var email by remember { mutableStateOf("") }
+    var profileUrl by remember { mutableStateOf("") }
+    val imageUri = rememberSaveable() { mutableStateOf<Uri?>(null) }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? -> uri?.let { imageUri.value=it } }
+    val selectedImageUri :Uri? = null
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            viewModel.uploadToImgur(context, it) { link ->
+                link?.let { uploadedUrl ->
+                    profileUrl = uploadedUrl
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) {
         viewModel.fetchUserData()
+        viewModel.fetchProfileImage()
     }
 
-    LaunchedEffect(userName,userEmail,userPhone) {
-        fullname = userName
-        email = userEmail
-        phone = userPhone
-
-
+    LaunchedEffect(user, profile) {
+        user?.let {
+            fullname = it.fullname
+            email = it.email
+            phone = it.phone
+        }
+        profile?.let {
+            profileUrl = it.profilePictureUrl
+        }
     }
-
 
 
     Scaffold ( topBar = {
@@ -179,12 +257,19 @@ fun EditProfileScreen(navController: NavController,
                     shape = CircleShape,
 
                     ){
-                    AsyncImage(
-                        model = imageUri.value ?: R.drawable.profilepics,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.size(200.dp).clickable { launcher.launch("image/*") })
-                }
+
+                        AsyncImage(
+                            model =imageUri.value ?: R.drawable.profilepics,
+                            contentDescription = "Profile Image",
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(CircleShape)
+
+                                .clickable { launcher.launch("image/*") })
+
+
+                    }
+
                 Spacer(Modifier.height(16.dp))
                 Text(text = "Add a profile picture",
                     fontSize = 20.sp,
@@ -194,14 +279,8 @@ fun EditProfileScreen(navController: NavController,
                 Spacer(Modifier.size(16.dp))
                 OutlinedTextField(
                     value = fullname,
-                    onValueChange ={newFullname -> fullname = newFullname} ,
-                    label = { Text(text = "Full Name")}
-                )
-                Spacer(Modifier.size(12.dp))
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = {newEmail -> email = newEmail},
-                    label = { Text(text = "Email")}
+                    onValueChange = { newFullname -> fullname = newFullname},
+                    label = { Text("Full Name") }
                 )
                 Spacer(Modifier.size(12.dp))
                 OutlinedTextField(
@@ -209,10 +288,26 @@ fun EditProfileScreen(navController: NavController,
                     onValueChange = {newPhone -> phone = newPhone},
                     label = { Text(text = "Phone Number")}
                 )
+                Spacer(Modifier.size(12.dp))
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = {newEmail -> email = newEmail},
+                    label = { Text(text = "Email")}
+                )
                 Spacer(Modifier.size(16.dp))
                 Button(onClick = {
-                    viewModel.updateProfile()
-
+                    selectedImageUri?.let { uri ->
+                        viewModel.uploadToImgur(context, uri) { uploadedUrl ->
+                            if (uploadedUrl != null) {
+                                viewModel.updateProfile(fullname,email, phone, uploadedUrl)
+                            } else {
+                                viewModel.updateProfile(fullname, email ,phone, profileUrl) // fallback
+                            }
+                        }
+                    } ?: run {
+                        // No image picked
+                        viewModel.updateProfile(fullname,email, phone, profileUrl)
+                    }
 
                 },
                     modifier = Modifier.align(Alignment.CenterHorizontally),
@@ -252,9 +347,8 @@ fun EditProfileScreen(navController: NavController,
 
 
 
-
-@Preview
-@Composable
-fun EditProfileScreenPreview(){
-    EditProfileScreen(rememberNavController(), viewModel = AuthViewModel())
-}
+//
+//@Preview
+//@Composable
+//fun EditProfileScreenPreview(){
+//    EditProfileScreen(rememberNavController(), viewModel = AuthViewModel())

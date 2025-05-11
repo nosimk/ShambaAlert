@@ -55,6 +55,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.farmer.R
 import com.example.farmer.data.AuthViewModel
 import com.example.farmer.navigation.ROUTE_EDIT
+import com.example.farmer.navigation.ROUTE_PASSWORD
 import com.example.farmer.navigation.ROUTE_POST
 import com.example.farmer.navigation.ROUTE_SETTINGS
 import com.example.farmer.navigation.ROUTE_START
@@ -208,6 +209,7 @@ fun ProfileScreen(navController: NavController,viewModel : AuthViewModel){
                 modifier = Modifier.size(70.dp))
 
             TextButton(onClick = {
+                navController.navigate(ROUTE_PASSWORD)
 
 
 

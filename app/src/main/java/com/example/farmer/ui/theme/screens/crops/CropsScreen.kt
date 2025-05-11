@@ -1,6 +1,7 @@
 package com.example.farmer.ui.theme.screens.crops
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,19 +35,37 @@ import com.example.farmer.ui.theme.CardWhite
 import com.example.farmer.ui.theme.ForestGreen
 import com.example.farmer.ui.theme.SoftGreen
 import com.example.farmer.R
+import com.example.farmer.models.Tip
+import com.example.farmer.models.UserModel
+import com.example.farmer.models.UserProfile
+import com.example.farmer.navigation.ROUTE_CROPFEED
 import com.example.farmer.ui.viewmodel.CropsViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.withContext
+import java.util.UUID
 
 
 @Composable
-fun CropsScreen(navController: NavController){
+fun CropsScreen(navController: NavController,onPostComplete: () -> Unit){
     var cropName by remember { mutableStateOf("") }
     var duration by remember { mutableStateOf("") }
     var harvest by remember { mutableStateOf("") }
     val cropsViewModel :CropsViewModel = viewModel()
     val context = LocalContext.current
-    var successMessage by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf("") }
+    val successMessage by remember { mutableStateOf("") }
+    val errorMessage by remember { mutableStateOf("") }
+    val cropId = UUID.randomUUID().toString()
+    val newCrops = Crops(
+        cropId = cropId,
+        cropName = cropName,
+        duration = duration,
+        harvest = harvest,
+
+        )
+
+
+
 //    val crops = listOf(
 //        Crops("Maize", "3 months", "August 2025", R.drawable.maize),
 //        Crops("Wheat", "4 months", "September 2025", R.drawable.whaetie),
@@ -108,24 +127,26 @@ fun CropsScreen(navController: NavController){
         )
         Spacer(Modifier.height(12.dp))
         Button(onClick = {
-            if (cropName.isNotBlank() && duration.isNotBlank() && harvest.isNotBlank()) {
-                val crop = Crops(cropName, duration, harvest)
-                cropsViewModel.addCrop(
-                    crop,
-                    onSuccess = {
-                        successMessage = "Crop added successfully!"
-                        errorMessage = ""
-                    },
-                    onFailure = { error ->
-                        successMessage = ""
-                        errorMessage = "Failed to add crop: $error"
-                    }
-                )
-            } else {
-                errorMessage = "Please fill in all fields."
+            if (cropName.isNotBlank() || duration.isNotBlank()|| harvest.isNotBlank()) {
+                val currentUser = FirebaseAuth.getInstance().currentUser
+                val authorId = currentUser?.uid ?: "anonymous"
+
+                val userRef = FirebaseDatabase.getInstance().getReference("Crops").child(authorId)
+                userRef.get().addOnSuccessListener { snapshot ->
+
+
+
+                    cropsViewModel.addCrop(newCrops,
+                        onSuccess = {Log.d("CropsScreen","Crop added successfully!")
+                            navController.navigate(ROUTE_CROPFEED)},
+
+                        onFailure = { error ->Log.e("CropsScreen","Error :$error") })
+                    navController.popBackStack()
+
+                    onPostComplete()
+                }
             }
-            navController.navigate(R)
-        },
+           },
            colors = ButtonDefaults.buttonColors(ForestGreen))
            {
                 Text(text = "SUBMIT",
@@ -136,8 +157,8 @@ fun CropsScreen(navController: NavController){
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun CropsScreenPreview (){
-    CropsScreen(rememberNavController())
-}
+//@Preview(showBackground = true, showSystemUi = true)
+//@Composable
+//fun CropsScreenPreview (){
+//    CropsScreen(rememberNavController(),onPostComplete: () -> Unit)
+//}
