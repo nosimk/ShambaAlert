@@ -4,6 +4,7 @@ package com.example.farmer.ui.theme.screens.tips
 import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -62,6 +63,7 @@ import com.example.farmer.models.Tip
 import com.example.farmer.navigation.ROUTE_CROPFORM
 import com.example.farmer.navigation.ROUTE_POST
 import com.example.farmer.navigation.ROUTE_SETTINGS
+import com.example.farmer.navigation.ROUTE_TIPS
 import com.example.farmer.navigation.ROUTE_WEATHER
 import com.example.farmer.ui.theme.CardWhite
 import com.example.farmer.ui.theme.MintGreen
@@ -111,19 +113,12 @@ fun FeedScreen(viewModel: TipsViewModel,navController: NavController,onDelete: (
                     modifier = Modifier.size(60.dp)) },
 
             )
-            NavigationBarItem(
-                selected = selectedItem.value == 2,
-                onClick = {selectedItem.value = 2 },
-                icon = { Image(painter = painterResource(R.drawable.settings),
-                    contentDescription = "",
-                    modifier = Modifier.size(45.dp)) },
 
-                )
             NavigationBarItem(
                 selected = selectedItem.value == 2,
                 onClick = {selectedItem.value = 2
                           navController.navigate(ROUTE_SETTINGS)},
-                icon = { Image(painter = painterResource(R.drawable.image), contentDescription = "",
+                icon = { Image(painter = painterResource(R.drawable.settings), contentDescription = "",
                     modifier = Modifier.size(60.dp)) },
 
                 )
@@ -157,7 +152,8 @@ fun FeedScreen(viewModel: TipsViewModel,navController: NavController,onDelete: (
                     navigationIcon ={
                         Icon(painter = painterResource(R.drawable.homed),
                             contentDescription = "Home",
-                            modifier = Modifier.size(70.dp),
+                            modifier = Modifier.size(70.dp).clickable { navController.navigate(
+                                ROUTE_TIPS) },
                             tint = ForestGreen) }  ,
                     actions = {})
                 TipsFeed(tips = tips.value, onDelete = { tipId ->viewModel.deleteTip(tipId)})

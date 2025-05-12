@@ -88,7 +88,7 @@ fun ProfileScreen(navController: NavController,viewModel : AuthViewModel){
             navigationIcon ={
                 Icon(painter = painterResource(R.drawable.homed),
                     contentDescription = "Home",
-                    modifier = Modifier.size(70.dp),
+                    modifier = Modifier.size(70.dp).clickable { navController.navigate(ROUTE_TIPS) },
                     tint = ForestGreen,
 
 
@@ -132,19 +132,13 @@ fun ProfileScreen(navController: NavController,viewModel : AuthViewModel){
                         modifier = Modifier.size(60.dp)) },
 
                     )
-                NavigationBarItem(
-                    selected = selectedItem.value == 0,
-                    onClick = {selectedItem.value = 0 },
-                    icon = { Image(painter = painterResource(R.drawable.settings),
-                        contentDescription = "",
-                        modifier = Modifier.size(45.dp)) },
 
-                    )
                 NavigationBarItem(
                     selected = selectedItem.value == 2,
                     onClick = {selectedItem.value = 2 },
-                    icon = { Image(painter = painterResource(R.drawable.image), contentDescription = "",
-                        modifier = Modifier.size(60.dp).clickable { navController.navigate(ROUTE_TIPS) }) },
+                    icon = { Image(painter = painterResource(R.drawable.settings), contentDescription = "",
+                        modifier = Modifier.size(60.dp).clickable { navController.navigate(
+                            ROUTE_SETTINGS) }) },
 
                     )
             }

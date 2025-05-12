@@ -7,9 +7,6 @@ data class ImgurResponse(
 )
 
 data class ImgurData(
-    val id: String,
-    val title: String?,
-    val description: String?,
     val link: String
 )
 

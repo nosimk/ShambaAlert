@@ -61,9 +61,11 @@ import com.example.farmer.ui.theme.MintGreen
 import com.example.farmer.ui.viewmodel.CropsViewModel
 import kotlin.time.Duration
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateListOf
 import com.example.farmer.navigation.ROUTE_CROPFORM
+import com.example.farmer.navigation.ROUTE_SETTINGS
 import java.util.UUID
 
 
@@ -87,13 +89,14 @@ fun CropFeed(viewModel: CropsViewModel = viewModel(),navController: NavControlle
             title = { Text(text = "ShambaAlert",
                 fontSize = 30.sp,
                 fontStyle = FontStyle.Normal,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable { navController.navigate(ROUTE_TIPS) }
             ) },
 
             navigationIcon ={
                 Icon(painter = painterResource(R.drawable.homed),
                     contentDescription = "Home",
-                    modifier = Modifier.size(70.dp),
+                    modifier = Modifier.size(70.dp).clickable { navController.navigate(ROUTE_TIPS) },
                     tint = ForestGreen,
 
 
@@ -138,20 +141,13 @@ fun CropFeed(viewModel: CropsViewModel = viewModel(),navController: NavControlle
                         modifier = Modifier.size(60.dp)) },
 
                     )
-                NavigationBarItem(
-                    selected = selectedItem.value == 0,
-                    onClick = {selectedItem.value = 0 },
-                    icon = { Image(painter = painterResource(R.drawable.settings),
-                        contentDescription = "",
-                        modifier = Modifier.size(45.dp)) },
 
-                    )
                 NavigationBarItem(
                     selected = selectedItem.value == 2,
                     onClick = {selectedItem.value = 2 },
-                    icon = { Image(painter = painterResource(R.drawable.image), contentDescription = "",
+                    icon = { Image(painter = painterResource(R.drawable.settings), contentDescription = "",
                         modifier = Modifier.size(60.dp).clickable { navController.navigate(
-                            ROUTE_TIPS
+                            ROUTE_SETTINGS
                         )
                         }) },
 
@@ -191,7 +187,16 @@ fun CropCard(crops: Crops){
             Text(text = "Name : ${crops.cropName}", fontWeight = FontWeight.Bold)
             Text(text = "Duration: ${crops.duration}")
             Text(text = "Harvest: ${crops.harvest}")
+           Icon(
+               painter = painterResource(R.drawable.deletes),
+               contentDescription = "",
+               modifier = Modifier.size(20.dp).clickable { cropsViewModel.deleteCrop(crops.cropId)  }
+           )
+
+
+
         }
+
     }
 }
 

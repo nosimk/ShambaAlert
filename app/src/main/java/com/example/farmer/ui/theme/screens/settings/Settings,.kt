@@ -50,6 +50,7 @@ import com.example.farmer.navigation.ROUTE_WEATHER
 import com.example.farmer.ui.theme.ForestGreen
 import com.example.farmer.ui.theme.MintGreen
 import com.example.farmer.ui.theme.SoftGreen
+import com.example.farmer.ui.theme.TextDark
 import com.example.farmer.ui.theme.screens.tips.TipsFeed
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -69,7 +70,7 @@ fun SettingsScreen(navController:NavController,userModel: UserModel,userProfile:
         navigationIcon ={
             Icon(painter = painterResource(R.drawable.homed),
                 contentDescription = "Home",
-                modifier = Modifier.size(70.dp),
+                modifier = Modifier.size(70.dp).clickable { navController.navigate(ROUTE_TIPS) },
                 tint = ForestGreen,
 
 
@@ -113,18 +114,11 @@ fun SettingsScreen(navController:NavController,userModel: UserModel,userProfile:
                     modifier = Modifier.size(60.dp)) },
 
                 )
-            NavigationBarItem(
-                selected = selectedItem.value == 0,
-                onClick = {selectedItem.value = 0 },
-                icon = { Image(painter = painterResource(R.drawable.settings),
-                    contentDescription = "",
-                    modifier = Modifier.size(45.dp)) },
 
-                )
             NavigationBarItem(
                 selected = selectedItem.value == 2,
                 onClick = {selectedItem.value = 2 },
-                icon = { Image(painter = painterResource(R.drawable.image), contentDescription = "",
+                icon = { Image(painter = painterResource(R.drawable.settings), contentDescription = "",
                     modifier = Modifier.size(60.dp).clickable { navController.navigate(ROUTE_TIPS) }) },
 
                 )
@@ -174,7 +168,8 @@ fun SettingsScreen(navController:NavController,userModel: UserModel,userProfile:
                     }){
                         Text(text = "Edit Profile",
                             fontSize = 20.sp,
-                            modifier = Modifier.padding(vertical = 10.dp))
+                            modifier = Modifier.padding(vertical = 10.dp),
+                            color = TextDark)
                     }
                 }
                 Row (){
@@ -185,7 +180,8 @@ fun SettingsScreen(navController:NavController,userModel: UserModel,userProfile:
                     TextButton(onClick = {}) {
                         Text(text = "Change Password",
                             fontSize = 20.sp,
-                            modifier = Modifier.padding(vertical = 10.dp))
+                            modifier = Modifier.padding(vertical = 10.dp),
+                            color = TextDark)
                     }
                 }
                 Row (){
@@ -198,7 +194,8 @@ fun SettingsScreen(navController:NavController,userModel: UserModel,userProfile:
                     TextButton(onClick = {}) {
                         Text(text = "Log Out",
                             fontSize = 20.sp,
-                            modifier = Modifier.padding(vertical = 10.dp))
+                            modifier = Modifier.padding(vertical = 10.dp),
+                            color = TextDark)
                     }
                 }
 

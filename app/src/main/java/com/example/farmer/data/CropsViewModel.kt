@@ -13,6 +13,7 @@ import com.example.farmer.models.Crops
 import com.google.firebase.Firebase
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
@@ -26,6 +27,7 @@ class CropsViewModel : ViewModel() {
 
     private val firestore = FirebaseFirestore.getInstance()
     private val db = FirebaseFirestore.getInstance()
+
 
 
     private val _crops = MutableStateFlow<List<Crops>>(emptyList())
@@ -77,7 +79,7 @@ class CropsViewModel : ViewModel() {
             .child(crop.cropId)
             .setValue(crop)
             .addOnSuccessListener {
-                Log.d("RTDB", "Crop added succesfully!")
+                Log.d("RTDB", "Crop added successfully!")
                 onSuccess()
             }
             .addOnFailureListener { e ->
@@ -86,30 +88,15 @@ class CropsViewModel : ViewModel() {
             }
 
 
-    }}
-//    fun deleteCrop(cropId :String){
-//        cropsRef.child(cropId).removeValue().addOnSuccessListener {
-//            _crops.value = _crops.value?.filter { it.cropId != cropId }
-//            Log.d("Delete","Tip deleted successfully")
-//        }.addOnFailureListener{ e ->
-//            Log.e("Delete","Error deleting tip",e)
-//        }    }}
+    }
+    fun deleteCrop(cropId :String){
+        FirebaseDatabase.getInstance().getReference().child(cropId).removeValue()
+            .addOnSuccessListener {
+                _crops.value = _crops.value.filter { it.cropId != cropId }
+                Log.d("Delete Crop ","Crop deleted successfully")
+            }
+            .addOnFailureListener{ e ->
+                Log.e("Delete Crop","Error deleting crop ",e)
+            }
 
-
-
-//    fun deleteCrop(id: String) {
-//        firestore.collection("crops").document(id)
-//            .delete()
-//            .addOnSuccessListener {
-//                Log.d("CropsViewModel", "Crop deleted successfully!"
-//            })
-//            }
-//            .addOnFailureListener { e ->
-//                Log.e("CropsViewModel", "Error deleting crop: ", e)
-//            }
-//
-//    override fun onCleared() {
-//        super.onCleared()
-//        listenerRegistration?.remove()
-//    }
-//}
+        }}

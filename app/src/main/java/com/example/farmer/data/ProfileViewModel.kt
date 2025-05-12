@@ -1,95 +1,97 @@
 package com.example.farmer.data
+
+import android.app.AlertDialog
+import android.app.Application
 import android.content.Context
 import android.net.Uri
-import android.util.Base64
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
 import com.example.farmer.models.UserModel
 import com.example.farmer.models.UserProfile
-import com.google.firebase.auth.FirebaseAuth
+import com.example.farmer.navigation.*
+import com.example.farmer.network.ImgurApiService
+import com.example.farmer.network.RetrofitClient
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+
 import com.google.firebase.database.FirebaseDatabase
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import okhttp3.*
-import org.json.JSONObject
-import java.io.IOException
+import com.google.firebase.database.ValueEventListener
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.io.File
+import androidx.lifecycle.AndroidViewModel
 
 
+class ProfileViewModel:ViewModel () {
+    private val database = FirebaseDatabase.getInstance().reference.child("Students")
 
+    private fun getImgurService(): ImgurApiService {
+        val logging = HttpLoggingInterceptor()
+        logging.level = HttpLoggingInterceptor.Level.BODY
 
+        val client = OkHttpClient.Builder()
+            .addInterceptor(logging)
+            .build()
 
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://api.imgur.com/")
+            .addConverterFactory(GsonConverterFactory.create())
+            .client(client)
+            .build()
 
-    class ProfileViewModel : ViewModel() {
-        private val database = FirebaseDatabase.getInstance().reference
-        private val auth = FirebaseAuth.getInstance()
+        return retrofit.create(ImgurApiService::class.java)
+    }
 
-        private val _userData = MutableStateFlow<UserModel?>(null)
-        val userData: StateFlow<UserModel?> = _userData
-
-        private val _profileImage = MutableStateFlow<UserProfile?>(null)
-        val profileImage: StateFlow<UserProfile?> = _profileImage
-
-        fun fetchUserData() {
-            val uid = auth.currentUser?.uid ?: return
-            database.child("Profiles").child(uid).get().addOnSuccessListener {
-                _userData.value = it.getValue(UserModel::class.java)
+    private fun getFileFromUri(context: Context, uri: Uri):
+            File? {
+        return try {
+            val inputStream = context.contentResolver
+                .openInputStream(uri)
+            val file = File.createTempFile("temp_image", ".jpg", context.cacheDir)
+            file.outputStream().use { output ->
+                inputStream?.copyTo(output)
             }
+            file
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
+    }
 
-        fun fetchProfileImage() {
-            val uid = auth.currentUser?.uid ?: return
-            database.child("profiles").child(uid).get().addOnSuccessListener {
-                _profileImage.value = it.getValue(UserProfile::class.java)
-            }
-        }
+    fun updateStudent(context: Context, navController: NavController,
+                      fullname: String, email: String,
+                      phone: String, userProfileId: String){
+        val databaseReference = FirebaseDatabase.getInstance()
+            .getReference("Updated/$userProfileId")
+        val updatedStudent = UserProfile(fullname,email,
+            phone, userProfileId)
 
-        fun updateProfile(fullname: String, phone: String,email:String, profileUrl: String?) {
-            val uid = auth.currentUser?.uid ?: return
-            val updates = mapOf(
-                "fullname" to fullname,
-                "email" to email,
-                "phone" to phone
-            )
-            database.child("users").child(uid).updateChildren(updates)
-            profileUrl?.let {
-                database.child("profiles").child(uid).setValue(UserProfile(it))
-            }
-        }
+        databaseReference.setValue(updatedStudent)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful){
 
-        fun uploadToImgur(context: Context, imageUri: Uri, onResult: (String?) -> Unit) {
-            val clientId = "4d6df5f198d2241"
+                    Toast.makeText(context,"Student Updated Successfully",Toast.LENGTH_LONG).show()
+                    navController.navigate(ROUTE_SETTINGS)
+                }else{
 
-            val inputStream = context.contentResolver.openInputStream(imageUri)
-            val imageBytes = inputStream?.readBytes()
-            inputStream?.close()
-
-            val requestBody = MultipartBody.Builder()
-                .setType(MultipartBody.FORM)
-                .addFormDataPart("image", Base64.encodeToString(imageBytes, Base64.DEFAULT))
-                .build()
-
-            val request = Request.Builder()
-                .url("https://api.imgur.com/3/image")
-                .addHeader("Authorization", "Client-ID $clientId")
-                .post(requestBody)
-                .build()
-
-            OkHttpClient().newCall(request).enqueue(object : Callback {
-                override fun onFailure(call: Call, e: IOException) {
-                    Log.e("ImgurUpload", "Upload failed: ${e.message}")
-                    onResult(null)
+                    Toast.makeText(context,"Student update failed",Toast.LENGTH_LONG).show()
                 }
-
-                override fun onResponse(call: Call, response: Response) {
-                    val body = response.body?.string()
-                    try {
-                        val link = JSONObject(body ?: "").getJSONObject("data").getString("link")
-                        Log.d("ImgurUpload", "Upload success: $link")
-                        onResult(link)
-                    } catch (e: Exception) {
-                        Log.e("ImgurUpload", "Parse error: $e")
-                        onResult(null)
-                    }
-                }
-            })
-    }}
+            }
+    }
+}

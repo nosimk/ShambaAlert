@@ -10,7 +10,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.farmer.data.AuthViewModel
-import com.example.farmer.data.ProfileViewModel
 import com.example.farmer.data.TipsViewModel
 import com.example.farmer.data.WeatherViewModel
 import com.example.farmer.models.Crops
@@ -48,7 +47,7 @@ fun AppNavHost(startDestination:String= ROUTE_START){
         composable(ROUTE_START) { StartUpScreen(navController) }
         composable(ROUTE_SETTINGS) { ProfileScreen(navController, viewModel = AuthViewModel()) }
         composable(ROUTE_HOMESCREEN){ HomeScreen(navController) }
-        composable(ROUTE_WEATHER) { WeatherScreen(viewModel = WeatherViewModel())  }
+        composable(ROUTE_WEATHER) { WeatherScreen(viewModel = WeatherViewModel(),navController = navController)  }
         composable(ROUTE_POST) { PostTipScreen(viewModel = TipsViewModel,navController = navController, onPostComplete = {})}
 
         composable(ROUTE_TIPS) { FeedScreen(viewModel = TipsViewModel,navController =navController, onDelete = {}) }

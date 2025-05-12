@@ -109,8 +109,10 @@ import android.widget.Toast
 
 
 import androidx.activity.compose.rememberLauncherForActivityResult
-import com.example.farmer.data.ProfileViewModel
+
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.farmer.data.ProfileViewModel
+import com.example.farmer.navigation.ROUTE_SETTINGS
 
 
 import okhttp3.*
@@ -122,47 +124,29 @@ import java.io.IOException
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditProfileScreen(navController: NavController,
+                      profileImageUrl : String,
+                      onImageUpload: (Uri)
 
 ){  val viewModel :ProfileViewModel = viewModel()
     val context = LocalContext.current
-    val user by viewModel.userData.collectAsState()
-    val profile by viewModel.profileImage.collectAsState()
+
+
 
     var fullname by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
-    var profileUrl by remember { mutableStateOf("") }
+//    var profileUrl by remember { mutableStateOf("") }
     val imageUri = rememberSaveable() { mutableStateOf<Uri?>(null) }
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? -> uri?.let { imageUri.value=it } }
     val selectedImageUri :Uri? = null
-
-    val imagePickerLauncher = rememberLauncherForActivityResult(
+    val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        uri?.let {
-            viewModel.uploadToImgur(context, it) { link ->
-                link?.let { uploadedUrl ->
-                    profileUrl = uploadedUrl
-                }
-            }
-        }
-    }
+    ) { uri -> uri?.let { onImageUpload(it) } }
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchUserData()
-        viewModel.fetchProfileImage()
-    }
 
-    LaunchedEffect(user, profile) {
-        user?.let {
-            fullname = it.fullname
-            email = it.email
-            phone = it.phone
-        }
-        profile?.let {
-            profileUrl = it.profilePictureUrl
-        }
-    }
+
+    
+    
 
 
     Scaffold ( topBar = {
@@ -180,7 +164,7 @@ fun EditProfileScreen(navController: NavController,
             navigationIcon ={
                 Icon(painter = painterResource(R.drawable.homed),
                     contentDescription = "Home",
-                    modifier = Modifier.size(70.dp),
+                    modifier = Modifier.size(70.dp).clickable { navController.navigate(ROUTE_TIPS) },
                     tint = ForestGreen,
 
 
@@ -224,19 +208,13 @@ fun EditProfileScreen(navController: NavController,
                     modifier = Modifier.size(60.dp)) },
 
                 )
-            NavigationBarItem(
-                selected = selectedItem.value == 0,
-                onClick = {selectedItem.value = 0 },
-                icon = { Image(painter = painterResource(R.drawable.settings),
-                    contentDescription = "",
-                    modifier = Modifier.size(45.dp)) },
 
-                )
             NavigationBarItem(
                 selected = selectedItem.value == 2,
                 onClick = {selectedItem.value = 2 },
-                icon = { Image(painter = painterResource(R.drawable.image), contentDescription = "",
-                    modifier = Modifier.size(60.dp).clickable { navController.navigate(ROUTE_TIPS) }) },
+                icon = { Image(painter = painterResource(R.drawable.settings), contentDescription = "",
+                    modifier = Modifier.size(60.dp).clickable { navController.navigate(
+                        ROUTE_SETTINGS) }) },
 
                 )
         }
@@ -296,20 +274,17 @@ fun EditProfileScreen(navController: NavController,
                 )
                 Spacer(Modifier.size(16.dp))
                 Button(onClick = {
-                    selectedImageUri?.let { uri ->
-                        viewModel.uploadToImgur(context, uri) { uploadedUrl ->
-                            if (uploadedUrl != null) {
-                                viewModel.updateProfile(fullname,email, phone, uploadedUrl)
-                            } else {
-                                viewModel.updateProfile(fullname, email ,phone, profileUrl) // fallback
-                            }
-                        }
-                    } ?: run {
-                        // No image picked
-                        viewModel.updateProfile(fullname,email, phone, profileUrl)
+
+                    val studentRepository = ProfileViewModel()
+                    studentRepository.updateStudent(context  = context,
+                        navController = navController,
+                        fullname=fullname,
+                        email= email,
+                        phone= phone,
+                        userProfileId = userProfileId)
                     }
 
-                },
+                ,
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     colors = ButtonDefaults.buttonColors(ForestGreen)) {
                     Text(text = "Edit Profile")
