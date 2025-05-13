@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -39,6 +40,7 @@ import com.example.farmer.models.Tip
 import com.example.farmer.models.UserModel
 
 import com.example.farmer.navigation.ROUTE_CROPFEED
+import com.example.farmer.ui.theme.MintGreen
 import com.example.farmer.ui.viewmodel.CropsViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
@@ -74,7 +76,7 @@ fun CropsScreen(navController: NavController,onPostComplete: () -> Unit){
 //    )
     Column (
         modifier = Modifier
-            .background(SoftGreen)
+            .background(MintGreen)
             .fillMaxSize()
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -152,13 +154,17 @@ fun CropsScreen(navController: NavController,onPostComplete: () -> Unit){
            {
                 Text(text = "SUBMIT",
                     fontSize = 20.sp,
-                    modifier = Modifier.fillMaxWidth())
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    color = Color.White)
         }
         Button(onClick = {navController.navigate(ROUTE_CROPFEED)},
-            colors = ButtonDefaults.buttonColors(ForestGreen),
-            modifier = Modifier.fillMaxWidth().padding(10.dp)) {
+            colors = ButtonDefaults.buttonColors(SoftGreen),
+            modifier = Modifier.fillMaxWidth().padding(10.dp),
+            ) {
             Text(text = "GO TO CROP FEED",
-                fontSize = 20.sp)
+                fontSize = 20.sp,
+                color = Color.White)
         }
 
 

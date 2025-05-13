@@ -187,11 +187,7 @@ fun CropCard(crops: Crops){
             Text(text = "Name : ${crops.cropName}", fontWeight = FontWeight.Bold)
             Text(text = "Duration: ${crops.duration}")
             Text(text = "Harvest: ${crops.harvest}")
-           Icon(
-               painter = painterResource(R.drawable.deletes),
-               contentDescription = "",
-               modifier = Modifier.size(20.dp).clickable { cropsViewModel.deleteCrop(crops.cropId)  }
-           )
+
 
 
 
