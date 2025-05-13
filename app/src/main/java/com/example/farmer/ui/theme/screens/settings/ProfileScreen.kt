@@ -54,7 +54,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.farmer.R
 import com.example.farmer.data.AuthViewModel
-import com.example.farmer.navigation.ROUTE_EDIT
+
 import com.example.farmer.navigation.ROUTE_PASSWORD
 import com.example.farmer.navigation.ROUTE_POST
 import com.example.farmer.navigation.ROUTE_SETTINGS
@@ -184,19 +184,7 @@ fun ProfileScreen(navController: NavController,viewModel : AuthViewModel){
 
         }
 
-        Row (){
-            Icon(
-                painter = painterResource(R.drawable.editp),
-                contentDescription = "",
-                modifier = Modifier.size(70.dp)
-            )
-            TextButton(onClick = {navController.navigate(ROUTE_EDIT)}) {
-                Text(text = "Edit profile",
-                    fontSize = 20.sp)
-            }
 
-
-        }
         Row (){
             Icon(painter = painterResource(R.drawable.password),
                 contentDescription = "",

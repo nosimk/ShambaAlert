@@ -37,7 +37,7 @@ import com.example.farmer.ui.theme.SoftGreen
 import com.example.farmer.R
 import com.example.farmer.models.Tip
 import com.example.farmer.models.UserModel
-import com.example.farmer.models.UserProfile
+
 import com.example.farmer.navigation.ROUTE_CROPFEED
 import com.example.farmer.ui.viewmodel.CropsViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -147,10 +147,18 @@ fun CropsScreen(navController: NavController,onPostComplete: () -> Unit){
                 }
             }
            },
-           colors = ButtonDefaults.buttonColors(ForestGreen))
+            modifier = Modifier.padding(10.dp).fillMaxWidth(),
+           colors = ButtonDefaults.buttonColors(SoftGreen))
            {
                 Text(text = "SUBMIT",
-                    fontSize = 20.sp)
+                    fontSize = 20.sp,
+                    modifier = Modifier.fillMaxWidth())
+        }
+        Button(onClick = {navController.navigate(ROUTE_CROPFEED)},
+            colors = ButtonDefaults.buttonColors(ForestGreen),
+            modifier = Modifier.fillMaxWidth().padding(10.dp)) {
+            Text(text = "GO TO CROP FEED",
+                fontSize = 20.sp)
         }
 
 

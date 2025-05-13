@@ -13,7 +13,7 @@ import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
 
 import com.example.farmer.models.UserModel
-import com.example.farmer.models.UserProfile
+
 import com.example.farmer.navigation.ROUTE_HOMESCREEN
 import com.example.farmer.navigation.ROUTE_LOGIN
 import com.example.farmer.navigation.ROUTE_TIPS
@@ -28,6 +28,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -63,8 +64,7 @@ class AuthViewModel:ViewModel() {
     private val _userPhone = MutableLiveData<String>()
     val userPhone: LiveData<String> get() = _userPhone
 
-    private val _userProfilePicture = MutableLiveData<UserProfile>()
-    val userProfilePicture: LiveData<UserProfile> get() = _userProfilePicture
+
     private val database = FirebaseDatabase.getInstance()
     private val storage = FirebaseStorage.getInstance()
     private val userId = "yourUserId" // Replace with actual user ID
@@ -165,7 +165,32 @@ class AuthViewModel:ViewModel() {
         } else {
             onError("User not logged in.")
         }
-    }}
+    }
+
+    fun fetchUserData() {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId != null) {
+            val databaseRef = FirebaseDatabase.getInstance().getReference("users").child(userId)
+
+            databaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    _userName.postValue(snapshot.child("name").getValue(String::class.java) ?: "No Name")
+                    _userEmail.postValue(snapshot.child("email").getValue(String::class.java) ?: "No Email")
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Log.e("FirebaseError", "Error fetching user data: ${error.message}")
+                }
+            })
+        }
+    }
+
+    init {
+        fetchUserData()
+    }
+}
+
+
 
 
 
